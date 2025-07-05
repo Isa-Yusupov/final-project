@@ -5,7 +5,6 @@ import (
 	"final-project/pkg/db"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -66,66 +65,3 @@ func writeJson(w http.ResponseWriter, data any) {
 		http.Error(w, "не удалось отправить ответ", http.StatusInternalServerError)
 	}
 }
-
-func getTaskHandler(w http.ResponseWriter, r *http.Request) {
-
-	idStr := r.URL.Query().Get("id")
-	if idStr == "" {
-		http.Error(w, "некорректный ID", http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil || id <= 0 {
-		http.Error(w, "некорректный ID", http.StatusBadRequest)
-		return
-	}
-
-	task, err := db.GetTask(idStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	writeJson(w, task)
-}
-
-func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
-
-	idStr := r.URL.Query().Get("id")
-	if idStr == "" {
-		http.Error(w, "некорректный ID", http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil || id <= 0 {
-		http.Error(w, "некорректный ID", http.StatusBadRequest)
-		return
-	}
-
-	var task db.Task
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	if err := json.Unmarshal(body, &task); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	task.ID = id
-
-	err = db.UpdateTask(&task)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-//ssss

@@ -20,17 +20,17 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 	splitRepeat := strings.Split(repeat, " ")
 	var interval int
 	var value string
+
 	if len(splitRepeat) == 1 {
 		value = splitRepeat[0]
 		interval = 1
 	} else {
+		var err error
 		value = splitRepeat[0]
-		chInterval, err := strconv.Atoi(splitRepeat[1])
+		interval, err = strconv.Atoi(splitRepeat[1])
 		if err != nil {
 			return "", err
 		}
-		interval = chInterval
-
 	}
 	date, err := time.Parse(dateFormat, dstart)
 
