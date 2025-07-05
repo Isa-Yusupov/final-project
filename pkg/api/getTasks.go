@@ -9,7 +9,7 @@ type TasksResp struct {
 	Tasks []*db.Task `json:"tasks"`
 }
 
-func tasksHandler(w http.ResponseWriter, r *http.Request) {
+func tasksHandler(w http.ResponseWriter, _ *http.Request) {
 	tasks, err := db.Tasks(50) // в параметре максимальное количество записей
 	if err != nil {
 		http.Error(w, "ошибка json", http.StatusBadRequest)

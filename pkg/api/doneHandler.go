@@ -17,8 +17,20 @@ func doneHandler(w http.ResponseWriter, r *http.Request) {
 
 	if task.Repeat == "" {
 		err = db.DeleteTask(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		return
 	}
-	now := time.Now()
+
+	now, err := time.Parse(dateFormat, task.Date)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
 	nextD, err := NextDate(now, task.Date, task.Repeat)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -32,4 +44,6 @@ func doneHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Bad Request"))
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
