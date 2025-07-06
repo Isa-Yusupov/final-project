@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type Task struct {
@@ -31,10 +32,36 @@ func AddTask(task *Task) (int64, error) {
 	return id, err
 }
 
-func Tasks(limit int) ([]*Task, error) {
+func GetTasks(limit int, search string) ([]*Task, error) {
 	var tasks []*Task
-	query := `SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT ?`
-	res, err := db.Query(query, limit)
+	var query string
+	var res *sql.Rows
+	var err error
+	var dateStr time.Time
+
+	if search != "" {
+		if isDate(search) {
+			dateStr, err = time.Parse("02.01.2006", search)
+			if err != nil {
+				return nil, err
+			}
+			formattedDate := dateStr.Format("20060102")
+			if err != nil {
+				return nil, err
+			}
+			query = `SELECT * FROM scheduler WHERE date = ? LIMIT ?`
+
+			res, err = db.Query(query, formattedDate, limit)
+
+		} else {
+			query = `SELECT * FROM scheduler WHERE title LIKE ? OR comment LIKE ? ORDER BY date LIMIT ?`
+			res, err = db.Query(query, "%"+search+"%", "%"+search+"%", limit)
+		}
+	} else {
+		query = `SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT ?`
+		res, err = db.Query(query, limit)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +92,7 @@ func Tasks(limit int) ([]*Task, error) {
 		tasks = append(tasks, task)
 	}
 
-	return tasks, err
+	return tasks, nil
 }
 
 func GetTask(id string) (*Task, error) {
@@ -145,4 +172,9 @@ func DeleteTask(id string) error {
 	}
 
 	return nil
+}
+
+func isDate(dateString string) bool {
+	_, err := time.Parse("02.01.2006", dateString)
+	return err == nil
 }
