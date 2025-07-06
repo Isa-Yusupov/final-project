@@ -16,7 +16,7 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		var err error
 		id, err = strconv.Atoi(idStr)
 		if err != nil || id <= 0 {
-			http.Error(w, "некорректный ID", http.StatusBadRequest)
+			http.Error(w, messageError(err), http.StatusBadRequest)
 			return
 		}
 	}
@@ -24,13 +24,13 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task db.Task
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, messageError(err), http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := json.Unmarshal(body, &task); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, messageError(err), http.StatusBadRequest)
 		return
 	}
 
@@ -39,7 +39,7 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if id <= 0 {
-		http.Error(w, "некорректный ID", http.StatusBadRequest)
+		http.Error(w, messageError(err), http.StatusBadRequest)
 		return
 	}
 
@@ -47,7 +47,7 @@ func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.UpdateTask(&task)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, messageError(err), http.StatusBadRequest)
 		return
 	}
 
